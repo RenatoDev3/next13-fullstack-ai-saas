@@ -1,6 +1,6 @@
 
 export default function DashboardPage() {
   return (
-    <p>Dashboard Page</p>
+    <p>Dashboard Page (Protected)</p>
   )
 }
