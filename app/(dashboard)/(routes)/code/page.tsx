@@ -21,8 +21,11 @@ import UserAvatar from "@/components/user-avatar";
 import BotAvatar from "@/components/bot-avatar";
 
 import { formSchema } from "./constants";
+import { useProModal } from "@/hooks/use-pro-modal";
 
 const CodePage = () => {
+  const proModal = useProModal();
+
   const router = useRouter();
   const [messages, setMessages] = useState<ChatCompletionRequestMessage[]>([]);
 
@@ -51,8 +54,9 @@ const CodePage = () => {
 
       form.reset();
     } catch (error: any) {
-      // TODO: Open Pro Modal
-      console.log(error);
+      if (error?.response?.status === 403) {
+        proModal.onOpen();
+      }
     } finally {
       router.refresh();
     }
@@ -104,8 +108,10 @@ const CodePage = () => {
         </div>
         <div className="space-y-4 mt-4">
           {isLoading && (
-            <div className="p-8 rounded-lg w-full flex items-center
-            justify-center bg-muted">
+            <div
+              className="p-8 rounded-lg w-full flex items-center
+            justify-center bg-muted"
+            >
               <Loader />
             </div>
           )}
@@ -114,30 +120,34 @@ const CodePage = () => {
           )}
           <div className="flex flex-col-reverse gap-y-4">
             {messages.map((message) => (
-              <div 
-              key={message.content}
-              className={cn("p-8 w-full flex items-start gap-x-8 rounded-lg", 
-              message.role === "user" ? "bg-white border border-black/10" 
-              : "bg-muted")}
+              <div
+                key={message.content}
+                className={cn(
+                  "p-8 w-full flex items-start gap-x-8 rounded-lg",
+                  message.role === "user"
+                    ? "bg-white border border-black/10"
+                    : "bg-muted"
+                )}
               >
                 {message.role === "user" ? <UserAvatar /> : <BotAvatar />}
-              <ReactMarkdown components={{
-                pre: ({ node, ...props}) => (
-                  <div className="overflow-auto w-full my-2 
-                  bg-black/10 p-2 rounded-lg">
-                    <pre {...props} />
-                  </div>
-                ),
-                code: ({ node, ...props}) => (
-                  <code className="bg-black/10 rounded-lg p-1" {...
-                    props} />
-                )
-              }}
-              className="text-sm overflow-hidden leading-7"
-              >
-                
-                {message.content || ""}
-              </ReactMarkdown>
+                <ReactMarkdown
+                  components={{
+                    pre: ({ node, ...props }) => (
+                      <div
+                        className="overflow-auto w-full my-2 
+                  bg-black/10 p-2 rounded-lg"
+                      >
+                        <pre {...props} />
+                      </div>
+                    ),
+                    code: ({ node, ...props }) => (
+                      <code className="bg-black/10 rounded-lg p-1" {...props} />
+                    ),
+                  }}
+                  className="text-sm overflow-hidden leading-7"
+                >
+                  {message.content || ""}
+                </ReactMarkdown>
               </div>
             ))}
           </div>

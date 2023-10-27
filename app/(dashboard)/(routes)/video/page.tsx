@@ -17,8 +17,11 @@ import Empty from "@/components/empty";
 import Loader from "@/components/loader";
 
 import { formSchema } from "./constants";
+import { useProModal } from "@/hooks/use-pro-modal";
 
 const VideoPage = () => {
+  const proModal = useProModal();
+
   const router = useRouter();
   const [video, setVideo] = useState<string>();
 
@@ -33,15 +36,16 @@ const VideoPage = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      setVideo(undefined)
+      setVideo(undefined);
 
-      const response = await axios.post("/api/video", values)
+      const response = await axios.post("/api/video", values);
 
-      setVideo(response.data[0])
+      setVideo(response.data[0]);
       form.reset();
     } catch (error: any) {
-      // TODO: Open Pro Modal
-      console.log(error);
+      if (error?.response?.status === 403) {
+        proModal.onOpen();
+      }
     } finally {
       router.refresh();
     }
@@ -93,17 +97,20 @@ const VideoPage = () => {
         </div>
         <div className="space-y-4 mt-4">
           {isLoading && (
-            <div className="p-8 rounded-lg w-full flex items-center
-            justify-center bg-muted">
+            <div
+              className="p-8 rounded-lg w-full flex items-center
+            justify-center bg-muted"
+            >
               <Loader />
             </div>
           )}
-          {!video && !isLoading && (
-            <Empty label="No video generated" />
-          )}
+          {!video && !isLoading && <Empty label="No video generated" />}
           {video && (
-            <video controls className="w-full aspect-video mt-8 
-            rounded-lg border bg-black">
+            <video
+              controls
+              className="w-full aspect-video mt-8 
+            rounded-lg border bg-black"
+            >
               <source src={video} />
             </video>
           )}
